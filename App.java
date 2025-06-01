@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -9,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import javax.swing.*;
@@ -23,35 +21,20 @@ public class App extends JFrame {
     private BufferedImage image;
     private ForkJoinPool pool = new ForkJoinPool();
     private static boolean isBenchmark;
-
-    private static enum Mode {
-        SEQUENTIAL,
-        PARALLEL,
-        DISTRIBUTED,
-    }
-
-    private static Mode mode = Mode.SEQUENTIAL;
-
     private static final long SEED = 5318008;
-
-    private static final int BRUSH_SIZE = 100;
+    private static final int BRUSH_SIZE = 20;
+    private static final int MAX_TEMP = 255;
 
     public static void main(String[] args) {
-            // ###### Master process ######
-
             // Default values
             width = 800;
             height = 600;
             numPoints = 3;
-
-            // Parse args
             isBenchmark = false;
+
+            // Parse arguments if given
             for (int i = 0; i < args.length; i++) {
-                if ("parallel".equals(args[i])) {
-                    mode = Mode.PARALLEL;
-                } else if ("distributed".equals(args[i])) {
-                    mode = Mode.DISTRIBUTED;
-                } else if ("benchmark".equals(args[i])) {
+                if ("benchmark".equals(args[i])) {
                     isBenchmark = true;
                 } else if ("width".equals(args[i]) && i + 1 < args.length) {
                     width = Integer.parseInt(args[i + 1]);
@@ -82,15 +65,7 @@ public class App extends JFrame {
                 }
 
                 if (isBenchmark) {
-                    System.out.print("Benchmarking simulation in ");
-                    switch (mode) {
-                        case SEQUENTIAL:
-                            System.out.println("sequential...");
-                            break;
-                        case PARALLEL:
-                            System.out.println("parallel...");
-                            break;
-                    }
+                    System.out.print("Benchmarking simulation in parallel mode...\n");
 
                     long startTime = System.currentTimeMillis();
                     while (!done()) {
@@ -112,11 +87,6 @@ public class App extends JFrame {
                     simulation.repaint();
                 }).start();
             });
-            // ###### Worker processes ######
-
-            // Ensure width and height are initialized
-            width = 800;
-            height = 600;
     }
 
     public App(int initialWidth, int initialHeight) {
@@ -207,7 +177,7 @@ public class App extends JFrame {
                 int dx = i - x;
                 int dy = j - y;
                 if (dx * dx + dy * dy <= BRUSH_SIZE * BRUSH_SIZE) {
-                    grid[i][j] = 255; // maximum temperature
+                    grid[i][j] = MAX_TEMP; // maximum temperature
                 }
             }
         }
@@ -246,14 +216,7 @@ public class App extends JFrame {
     }
 
     public void simulate() {
-        switch (mode) {
-            case SEQUENTIAL:
-                simulateSequential();
-                break;
-            case PARALLEL:
-                simulateParallel();
-                break;
-        }
+        simulateParallel();
     }
 
     private int calculateNewTemperature(int x, int y) {
