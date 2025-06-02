@@ -211,7 +211,9 @@ public class App extends JFrame {
 //            "Updating grid:\n" + newGrid.length + "x" + newGrid[0].length
 //        );
         grid = newGrid;
-        drawGrid(0, 0, width - 1, height - 1);
+        if(!isBenchmark){
+            drawGrid(0, 0, width - 1, height - 1);
+        }
         // repaint();
     }
 
@@ -246,18 +248,6 @@ public class App extends JFrame {
         }
 
         return totalTemp / totalCells; // average temperature
-    }
-
-    private void simulateSequential() {
-        int[][] newGrid = new int[width][height];
-
-        for (int x = 0; x < width; x++) for (
-                int y = 0;
-                y < height;
-                y++
-        ) newGrid[x][y] = calculateNewTemperature(x, y);
-
-        updateGrid(newGrid);
     }
 
     public void simulateParallel() {
