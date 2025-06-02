@@ -69,7 +69,7 @@ public class App extends JFrame {
 
                     long startTime = System.currentTimeMillis();
                     while (!done()) {
-                        simulation.simulate();
+                        simulation.simulateParallel();
                     }
                     long endTime = System.currentTimeMillis();
                     System.out.println(
@@ -78,7 +78,7 @@ public class App extends JFrame {
 
                     System.exit(0);
                 } else {
-                    new Timer(1000 / 30, e -> simulation.simulate()).start();
+                    new Timer(1000 / 30, e -> simulation.simulateParallel()).start();
                 }
 
                 final int FPS = 30;
@@ -182,8 +182,9 @@ public class App extends JFrame {
             }
         }
 
-        drawGrid(minX, minY, maxX, maxY);
-        // repaint(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        if(!isBenchmark){
+            drawGrid(minX, minY, maxX, maxY);
+        }
     }
 
     @Override
@@ -207,18 +208,10 @@ public class App extends JFrame {
     }
 
     public void updateGrid(int[][] newGrid) {
-//        System.out.println(
-//            "Updating grid:\n" + newGrid.length + "x" + newGrid[0].length
-//        );
         grid = newGrid;
         if(!isBenchmark){
             drawGrid(0, 0, width - 1, height - 1);
         }
-        // repaint();
-    }
-
-    public void simulate() {
-        simulateParallel();
     }
 
     private int calculateNewTemperature(int x, int y) {
