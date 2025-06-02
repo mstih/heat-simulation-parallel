@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.stream.IntStream;
 import javax.swing.*;
 
 public class App extends JFrame {
@@ -244,49 +245,17 @@ public class App extends JFrame {
     }
 
     public void simulateParallel() {
-        RecursiveTask<int[][]> task = new RecursiveTask<int[][]>() {
-            @Override
-            protected int[][] compute() {
-                int[][] newGrid = new int[width][height];
+        int[][] newGrid = new int[width][height];
 
-                // splits work into chunks
-                int chunkSize = Math.max(1, width / pool.getParallelism()); // adapts to the number of threads
-                List<RecursiveTask<Void>> tasks = new ArrayList<>();
-
-                for (int i = 0; i < width; i += chunkSize) { // for each chunk
-                    final int start = i;
-                    final int end = Math.min(i + chunkSize, width);
-
-                    tasks.add(
-                            new RecursiveTask<Void>() { // creates a thread
-                                @Override
-                                protected Void compute() {
-                                    for (int x = start; x < end; x++) for ( // calculates new temperature for each cell
-                                            int y = 0;
-                                            y < height;
-                                            y++
-                                    ) newGrid[x][y] = calculateNewTemperature(x, y); // in the chunk // and updates the new grid
-                                    return null;
-                                }
-                            }
-                    );
-                }
-
-                // starts all threads
-                for (RecursiveTask<Void> task : tasks) task.fork();
-                // waits until all threads end
-                for (RecursiveTask<Void> task : tasks) task.join();
-
-                return newGrid;
+        // Parallelize over the X-dimension (columns)
+        IntStream.range(0, width).parallel().forEach(x -> {
+            for (int y = 0; y < height; y++) {
+                newGrid[x][y] = calculateNewTemperature(x, y);
             }
-        };
+        });
 
-        try {
-            int[][] newGrid = pool.invoke(task); // calls compute()
-            updateGrid(newGrid);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        updateGrid(newGrid);
+
     }
 }
 
