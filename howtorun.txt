@@ -1,0 +1,8 @@
+How to run:
+
+Example for benchmark mode: 
+"java App benchmark width 1000 height 1000 points 10"
+
+
+Example for GUI:
+"java App" or "java App width 1000 height 1000"
